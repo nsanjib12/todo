@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Daily Tasks · PWA</title>
+    <meta name="description" content="A simple daily task scheduler with cloud sync">
+    <meta name="theme-color" content="#4a6fa5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tasks">
+    
+    <!-- Favicon & Apple Touch Icon (same SVG) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234a6fa5'/%3E%3Crect x='30' y='20' width='40' height='55' rx='5' fill='white'/%3E%3Crect x='38' y='30' width='24' height='4' rx='2' fill='%234a6fa5'/%3E%3Crect x='38' y='40' width='24' height='4' rx='2' fill='%234a6fa5'/%3E%3Crect x='38' y='50' width='16' height='4' rx='2' fill='%234a6fa5'/%3E%3Cpolyline points='42,62 47,67 57,57' fill='none' stroke='%234a6fa5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234a6fa5'/%3E%3Crect x='30' y='20' width='40' height='55' rx='5' fill='white'/%3E%3Crect x='38' y='30' width='24' height='4' rx='2' fill='%234a6fa5'/%3E%3Crect x='38' y='40' width='24' height='4' rx='2' fill='%234a6fa5'/%3E%3Crect x='38' y='50' width='16' height='4' rx='2' fill='%234a6fa5'/%3E%3Cpolyline points='42,62 47,67 57,57' fill='none' stroke='%234a6fa5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+    
+    <!-- PWA Manifest (inline via data URI) -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRhaWx5IFRhc2tzIiwKICAic2hvcnRfbmFtZSI6ICJUYXNrcyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjVmM2VmIiwKICAidGhlbWVfY29sb3IiOiAiIzRhNmZhNSIsCiAgImRlc2NyaXB0aW9uIjogIkEgc2ltcGxlIGRhaWx5IHRhc2sgc2NoZWR1bGVyIHdpdGggY2xvdWQgc3luYyIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmclMjB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnJTIwdmlld0JveD0nMCUyMDAlMjAxMDAlMjAxMDAnJTIwJTNlJTNDcmVjdCUyMHdpZHRoPScxMDAnJTIwaGVpZ2h0PScxMDAnJTIwcng9JzIwJyUyMGZpbGw9JyUyMzRhNmZhNSclMkYlM0UlM0NyZWN0JTIweD0nMzAnJTIweT0nMjAnJTIwd2lkdGg9JzQwJyUyMGhlaWdodD0nNTUnJTIwcng9JzUnJTIwZmlsbD0nd2hpdGUnJTJGJTNFJTNDcmVjdCUyMHglM0QnMzgnJTIweSUzRCczMCclMjB3aWR0aCUzRCcyNCclMjBoZWlnaHQlM0QnNCclMjByeCUzRCcyJyUyMGZpbGwlM0QnJTIzNGE2ZmE1JyUyRiUzRSUzQ3JlY3QlMjB4JTNEJzM4JyUyMHklM0QnNDAnJTIwd2lkdGglM0QnMjQnJTIwaGVpZ2h0JTNEJzQnJTIwcnglM0QnMiclMjBmaWxsJTNEJyUyMzRhNmZhNSclMkYlM0UlM0NyZWN0JTIweCUzRCczOCclMjB5JTNEJzUwJyUyMHdpZHRoJTNEJzE2JyUyMGhlaWdodCUzRCc0JyUyMHJ4JTNEJzInJTIwZmlsbCUzRCclMjM0YTZmYTUnJTJGJTNFJTNDcG9seWxpbmUlMjBwb2ludHMlM0QnNDIsNjIgNDcsNjcgNTcsNTcnJTIwZmlsbCUzRCdub25lJyUyMHN0cm9rZSUzRCclMjM0YTZmYTUnJTIwc3Ryb2tlLXdpZHRoJTNEJzQnJTIwc3Ryb2tlLWxpbmVjYXAlM0Qncm91bmQnJTJGJTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICIxNDR4MTQ0IiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyUyMHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyclMjB2aWV3Qm94PScwJTIwMCUyMDEwMCUyMDEwMCclMjAlM2UlM0NyZWN0JTIwd2lkdGg9JzEwMCclMjBoZWlnaHQ9JzEwMCclMjByeD0nMjAnJTIwZmlsbD0nJTIzNGE2ZmE1JyUyRiUzRSUzQ3JlY3QlMjB4PSczMCclMjB5PScyMCclMjB3aWR0aD0nNDAnJTIwaGVpZ2h0PSc1NSclMjByeD0nNSclMjBmaWxsPSd3aGl0ZSclMkYlM0UlM0NyZWN0JTIweCUzRCczOCclMjB5JTNEJzMwJyUyMHdpZHRoJTNEJzI0JyUyMGhlaWdodCUzRCc0JyUyMHJ4JTNEJzInJTIwZmlsbCUzRCclMjM0YTZmYTUnJTJGJTNFJTNDcmVjdCUyMHglM0QnMzgnJTIweSUzRCc0MCclMjB3aWR0aCUzRCcyNCclMjBoZWlnaHQlM0QnNCclMjByeCUzRCcyJyUyMGZpbGwlM0QnJTIzNGE2ZmE1JyUyRiUzRSUzQ3JlY3QlMjB4JTNEJzM4JyUyMHklM0QnNTAnJTIwd2lkdGglM0QnMTYnJTIwaGVpZ2h0JTNEJzQnJTIwcnglM0QnMiclMjBmaWxsJTNEJTIzNGE2ZmE1JyUyRiUzRSUzQ3BvbHlsaW5lJTIwcG9pbnRzJTNEJzQyLDYyIDQ3LDY3IDU3LDU3JyUyMGZpbGwlM0Qnbm9uZSclMjBzdHJva2UlM0QnJTIzNGE2ZmE1JyUyMHN0cm9rZS13aWR0aCUzRCc0JyUyMHN0cm9rZS1saW5lY2FwJTNEJ3JvdW5kJyUyRiUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgICB9LAogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmclMjB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnJTIwdmlld0JveD0nMCUyMDAlMjAxMDAlMjAxMDAnJTIwJTNlJTNDcmVjdCUyMHdpZHRoPScxMDAnJTIwaGVpZ2h0PScxMDAnJTIwcng9JzIwJyUyMGZpbGw9JyUyMzRhNmZhNSclMkYlM0UlM0NyZWN0JTIweD0nMzAnJTIweT0nMjAnJTIwd2lkdGg9JzQwJyUyMGhlaWdodD0nNTUnJTIwcng9JzUnJTIwZmlsbD0nd2hpdGUnJTJGJTNFJTNDcmVjdCUyMHglM0QnMzgnJTIweSUzRCczMCclMjB3aWR0aCUzRCcyNCclMjBoZWlnaHQlM0QnNCclMjByeCUzRCcyJyUyMGZpbGwlM0QnJTIzNGE2ZmE1JyUyRiUzRSUzQ3JlY3QlMjB4JTNEJzM4JyUyMHklM0QnNDAnJTIwd2lkdGglM0QnMjQnJTIwaGVpZ2h0JTNEJzQnJTIwcnglM0QnMiclMjBmaWxsJTNEJyUyMzRhNmZhNSclMkYlM0UlM0NyZWN0JTIweCUzRCczOCclMjB5JTNEJzUwJyUyMHdpZHRoJTNEJzE2JyUyMGhlaWdodCUzRCc0JyUyMHJ4JTNEJzInJTIwZmlsbCUzRCclMjM0YTZmYTUnJTJGJTNFJTNDcG9seWxpbmUlMjBwb2ludHMlM0QnNDIsNjIgNDcsNjcgNTcsNTcnJTIwZmlsbCUzRCdub25lJyUyMHN0cm9rZSUzRCclMjM0YTZmYTUnJTIwc3Ryb2tlLXdpZHRoJTNEJzQnJTIwc3Ryb2tlLWxpbmVjYXAlM0Qncm91bmQnJTJGJTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #f5f3ef;
+            --card-bg: #ffffff;
+            --text: #1e1e1e;
+            --text-secondary: #6e6e6e;
+            --border: #e0dcd4;
+            --accent: #4a6fa5;
+            --today-highlight: #e0b94a;
+            --shadow: 0 2px 14px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+        .app-container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .logo { font-size:1.8rem; }
+        .title { font-size:1.4rem; font-weight:700; letter-spacing:-0.02em; }
+        .subtitle { font-size:0.78rem; color:var(--text-secondary); }
+        .header-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.4rem;
+            padding: 6px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .icon-btn:hover { background: #eee; }
+        .icon-btn .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            border: 1px solid #fff;
+        }
+        .reminder-active .bell-icon { color: #4caf50; }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            font-family: var(--font);
+        }
+        .btn-primary { background: var(--accent); color:#fff; border-color:var(--accent); }
+        .btn-primary:hover { background: #3d5d8a; }
+        .btn-outline:hover { background: #f9f7f3; }
+        .today-btn { border-color: var(--today-highlight); background: #fffdf5; color: #8a6d20; }
+        .today-btn:hover { background: #fff9dd; }
+
+        .week-strip {
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+        }
+        .nav-arrow {
+            font-size: 1.4rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .nav-arrow:hover { background: #e8e3da; }
+        .week-days {
+            display: flex;
+            flex: 1;
+            gap: 4px;
+        }
+        .week-day {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 8px 2px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            border: 2px solid transparent;
+            background: #fafaf7;
+            user-select: none;
+        }
+        .week-day:hover { background: #eef2f7; border-color: #c0cbe0; }
+        .week-day.today { border-color: var(--today-highlight); background: #fffdf5; }
+        .week-day.selected { background: #e7ecf5; border-color: var(--accent); }
+        .week-day .day-name { font-size:0.65rem; color:#999; text-transform:uppercase; }
+        .week-day .day-num { font-size:0.95rem; font-weight:700; }
+        .week-day.today .day-num { color:#7a6518; background:#fff9d6; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+
+        .task-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+        }
+        .task-panel h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-panel .date-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        .task-list {
+            margin-bottom: 16px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #fafaf7;
+            margin-bottom: 4px;
+            transition: 0.2s;
+        }
+        .task-item:hover { background: #f0ede6; }
+        .task-radio {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2.5px solid #d5d0c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .task-item.done .task-radio {
+            border-color: transparent;
+            background: var(--accent);
+        }
+        .task-radio .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            transform: scale(0);
+            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .task-item.done .task-radio .dot { transform: scale(1); }
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .task-item.done .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .task-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #c44;
+            font-size: 1.1rem;
+            font-weight: 700;
+            opacity: 0;
+            transition: 0.2s;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .task-item:hover .task-delete { opacity: 1; }
+        .task-delete:hover { background: #fce8e8; }
+        .add-task-row {
+            display: flex;
+            gap: 10px;
+        }
+        .add-task-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: 1.5px solid var(--border);
+            font-size: 0.95rem;
+            font-family: var(--font);
+            background: #fafaf7;
+        }
+        .add-task-row input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74,111,165,0.1);
+            background: #fff;
+        }
+        .empty-message {
+            text-align: center;
+            color: #aaa;
+            padding: 20px;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+        .stat-card.progress-card {
+            flex: 1 1 0%;
+            text-align: left;
+        }
+        .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); line-height: 1.2; }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .chart-card {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .chart-container { height: 200px; }
+
+        /* Settings Dropdown */
+        .settings-panel {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 36px rgba(0,0,0,0.15);
+            padding: 16px;
+            width: 310px;
+            display: none;
+            z-index: 50;
+            font-size: 0.85rem;
+        }
+        .settings-panel.show { display: block; }
+        .settings-panel .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .sync-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .sync-dot.online { background: #4caf50; }
+        .sync-dot.offline { background: #f44336; }
+        .sync-dot.syncing { background: #ff9800; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%{opacity:1;} 50%{opacity:0.4;} 100%{opacity:1;} }
+        .settings-section {
+            margin-top: 14px;
+            border-top: 1px solid #e8e3da;
+            padding-top: 12px;
+        }
+        .settings-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .settings-row input {
+            flex:1;
+            padding:6px 10px;
+            border-radius: 14px;
+            border:1px solid var(--border);
+            font-size:0.75rem;
+            font-family: var(--font);
+        }
+        .small-btn {
+            padding:4px 12px;
+            font-size:0.75rem;
+            border-radius:14px;
+            border:1px solid var(--border);
+            background:#fff;
+            cursor:pointer;
+            font-weight:600;
+            white-space: nowrap;
+        }
+        .small-btn:hover { background:#f0ede6; }
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            font-size: 1rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.45);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+        }
+        .modal-box h3 { font-size:1.2rem; margin-bottom:10px; }
+        .modal-box p { font-size:0.9rem; color:#555; margin-bottom:18px; }
+        .modal-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+        .modal-input {
+            width:100%; padding:10px 14px;
+            border-radius: 24px;
+            border:1.5px solid var(--border);
+            font-size:0.9rem;
+            margin-bottom:12px;
+            font-family: var(--font);
+        }
+
+        /* Install prompt */
+        .install-prompt {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+            z-index: 300;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .install-prompt.show { display: flex; }
+        .install-prompt button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; padding-top: max(10px, env(safe-area-inset-top)); }
+            .header { padding: 12px 14px; }
+            .title { font-size:1.2rem; }
+            .week-strip { padding: 8px 10px; gap: 4px; }
+            .nav-arrow { padding: 6px; font-size:1.2rem; }
+            .week-day .day-name { font-size:0.55rem; }
+            .week-day .day-num { font-size:0.8rem; }
+            .week-day.today .day-num { width:24px; height:24px; }
+            .task-panel { padding: 14px 16px; }
+            .chart-container { height: 180px; }
+            .settings-panel { width: 270px; right: 10px; }
+            .stat-card { padding: 10px 12px; }
+            .stat-value { font-size:1.4rem; }
+            .stat-label { font-size:0.65rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Install prompt -->
+        <div class="install-prompt" id="installPrompt">
+            <span>📲 Install this app?</span>
+            <button id="installBtn">Install</button>
+            <button style="background:transparent; border:none; font-size:1.2rem; cursor:pointer;" id="dismissInstall">✕</button>
+        </div>
+
+        <div class="modal-overlay" id="recoveryModal" style="display:none;">
+            <div class="modal-box">
+                <h3>Welcome to Daily Tasks</h3>
+                <p>Do you have a recovery ID from another device?</p>
+                <div id="recoveryChoice">
+                    <div class="modal-actions">
+                        <button class="btn btn-outline" id="useExistingBtn">Yes, I have an ID</button>
+                        <button class="btn btn-primary" id="createNewBtn">No, start fresh</button>
+                    </div>
+                </div>
+                <div id="recoveryInputArea" style="display:none;">
+                    <input type="text" class="modal-input" id="modalRecoveryId" placeholder="Paste recovery ID here" />
+                    <div class="modal-actions">
+                        <button class="btn btn-outline" id="backToChoiceBtn">Back</button>
+                        <button class="btn btn-primary" id="loadExistingBtn">Load</button>
+                    </div>
+                </div>
+                <div id="recoveryError" style="color:red; margin-top:8px; font-size:0.8rem;"></div>
+            </div>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <span class="logo">📋</span>
+                <div>
+                    <div class="title">Daily Tasks</div>
+                    <div class="subtitle">Plan & track each day</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="today-btn btn" id="todayBtn">📍 Today</button>
+                <button class="icon-btn" id="reminderToggleBtn" title="Toggle reminders">
+                    <span class="bell-icon">🔔</span>
+                    <span class="badge" id="reminderBadge" style="display:none;"></span>
+                </button>
+                <button class="icon-btn" id="settingsBtn" title="Cloud sync & backup">⚙️</button>
+            </div>
+        </div>
+
+        <input type="file" id="restoreFileInput" accept=".json" style="display:none;">
+
+        <div class="settings-panel" id="settingsPanel">
+            <div style="font-weight:700; margin-bottom:8px;">☁️ Cloud Sync</div>
+            <div class="sync-status">
+                <span class="sync-dot" id="syncDot"></span>
+                <span id="syncText">Checking...</span>
+            </div>
+            <div style="margin-bottom:10px; font-size:0.75rem; color:#6e6e6e;">
+                Your recovery ID is hidden by default. 
+                <a href="#" id="revealIdLink" style="color:var(--accent); text-decoration:none;">Tap to reveal</a>
+            </div>
+            <div id="recoveryIdContainer" style="display:flex; gap:6px; margin-bottom:6px; display:none;">
+                <input type="text" id="currentBlobId" readonly style="flex:1; padding:6px 10px; border-radius:14px; border:1px solid var(--border); font-size:0.75rem; background:#f8f8f8;" />
+                <button class="small-btn copy-btn" id="copyBlobIdBtn" title="Copy recovery ID">📋</button>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="text" id="recoveryIdInput" placeholder="Paste ID to load here" style="flex:1; padding:6px 10px; border-radius:14px; border:1px solid var(--border); font-size:0.75rem;" />
+                <button class="small-btn" id="recoverBtn">Load</button>
+            </div>
+            <div class="settings-section">
+                <div style="font-weight:700; margin-bottom:6px;">💾 Local Backup</div>
+                <div style="font-size:0.75rem; color:#6e6e6e; margin-bottom:8px;">
+                    Save a copy to your device or restore a backup.
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="small-btn" id="downloadBackupBtn" style="flex:1;">📥 Download</button>
+                    <button class="small-btn" id="restoreBackupBtn" style="flex:1;">📤 Restore</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="week-strip" id="weekStrip">
+            <button class="nav-arrow" id="prevWeekBtn">◀</button>
+            <div class="week-days" id="weekDays"></div>
+            <button class="nav-arrow" id="nextWeekBtn">▶</button>
+        </div>
+
+        <div class="task-panel" id="taskPanel">
+            <h2 id="taskDateHeading">Loading...</h2>
+            <div class="date-label" id="taskDateLabel"></div>
+            <div class="task-list" id="taskList"></div>
+            <div class="add-task-row">
+                <input type="text" id="newTaskInput" placeholder="Add a new task..." maxlength="80" />
+                <button class="btn btn-primary" id="addTaskBtn">Add</button>
+            </div>
+        </div>
+
+        <div class="stats-bar" id="statsBar"></div>
+
+        <div class="chart-card">
+            <h3 style="margin-bottom:8px;">📊 Tasks Completed Per Day (This Month)</h3>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed', err));
+            });
+        }
+
+        // PWA install prompt handling
+        let deferredPrompt;
+        const installDiv = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissInstall');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installDiv.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('Install outcome:', outcome);
+                deferredPrompt = null;
+                installDiv.classList.remove('show');
+            }
+        });
+
+        dismissBtn.addEventListener('click', () => {
+            installDiv.classList.remove('show');
+        });
+    </script>
+
+    <!-- Main app logic (same as before, with ID hidden by default) -->
+    <script>
+        (function() {
+            const JSONBLOB_API = 'https://jsonblob.com/api/jsonBlob';
+            const STORAGE_KEY = 'taskSchedulerBlobId';
+            const REMINDER_KEY = 'reminderEnabled';
+            let blobId = null;
+            let localData = { tasks: {} };
+            let syncInProgress = false;
+            let performanceChart = null;
+            let reminderInterval = null;
+            let reminderActive = false;
+
+            let selectedDate = new Date();
+            let weekCenter = new Date(selectedDate);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            document.getElementById('revealIdLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                const container = document.getElementById('recoveryIdContainer');
+                if (container.style.display === 'none' || container.style.display === '') {
+                    container.style.display = 'flex';
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+
+            function getSavedBlobId() {
+                return localStorage.getItem(STORAGE_KEY) || getCookie('blobId');
+            }
+            function saveBlobId(id) {
+                localStorage.setItem(STORAGE_KEY, id);
+                setCookie('blobId', id, 3650);
+                const el = document.getElementById('currentBlobId');
+                if (el) el.value = id || '';
+            }
+
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+            }
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for(let i=0;i<ca.length;i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            async function createBlob(data) {
+                const resp = await fetch(JSONBLOB_API, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (!resp.ok) throw new Error('Create failed');
+                const location = resp.headers.get('Location');
+                return location.split('/').pop();
+            }
+            async function fetchBlob(id) {
+                const resp = await fetch(`${JSONBLOB_API}/${id}`);
+                if (!resp.ok) throw new Error('Fetch failed');
+                return await resp.json();
+            }
+            async function updateBlob(id, data) {
+                await fetch(`${JSONBLOB_API}/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(data)
+                });
+            }
+            async function syncToCloud() {
+                if (!blobId || syncInProgress) return;
+                syncInProgress = true;
+                updateSyncUI('syncing', 'Syncing...');
+                try {
+                    await updateBlob(blobId, localData);
+                    updateSyncUI('online', 'Saved online');
+                } catch(e) {
+                    console.warn('Sync failed', e);
+                    updateSyncUI('offline', 'Offline (local only)');
+                } finally { syncInProgress = false; }
+            }
+            async function loadFromCloud() {
+                if (!blobId) return;
+                updateSyncUI('syncing', 'Loading...');
+                try {
+                    localData = await fetchBlob(blobId);
+                    updateSyncUI('online', 'Online');
+                } catch(e) {
+                    console.warn('Cloud load failed');
+                    updateSyncUI('offline', 'Offline');
+                }
+            }
+            function updateSyncUI(state, text) {
+                document.getElementById('syncDot').className = 'sync-dot ' + state;
+                document.getElementById('syncText').textContent = text;
+            }
+
+            function downloadBackup() {
+                const json = JSON.stringify(localData, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'daily-tasks-backup.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function restoreBackup(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data && data.tasks) {
+                            localData = data;
+                            saveLocalBackup();
+                            if (blobId) syncToCloud();
+                            renderAll();
+                            alert('✅ Backup restored successfully!');
+                        } else {
+                            alert('❌ Invalid backup file.');
+                        }
+                    } catch (err) {
+                        alert('❌ Could not parse backup file.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            async function showRecoveryModal() {
+                const modal = document.getElementById('recoveryModal');
+                const choiceDiv = document.getElementById('recoveryChoice');
+                const inputDiv = document.getElementById('recoveryInputArea');
+                const errorDiv = document.getElementById('recoveryError');
+                modal.style.display = 'flex';
+                choiceDiv.style.display = 'block';
+                inputDiv.style.display = 'none';
+                errorDiv.textContent = '';
+
+                document.getElementById('useExistingBtn').onclick = () => {
+                    choiceDiv.style.display = 'none';
+                    inputDiv.style.display = 'block';
+                    document.getElementById('modalRecoveryId').focus();
+                };
+                document.getElementById('createNewBtn').onclick = async () => {
+                    modal.style.display = 'none';
+                    await createNewBlob();
+                };
+                document.getElementById('backToChoiceBtn').onclick = () => {
+                    choiceDiv.style.display = 'block';
+                    inputDiv.style.display = 'none';
+                    errorDiv.textContent = '';
+                    document.getElementById('modalRecoveryId').value = '';
+                };
+                document.getElementById('loadExistingBtn').onclick = async () => {
+                    const id = document.getElementById('modalRecoveryId').value.trim();
+                    if (!id) return;
+                    errorDiv.textContent = '';
+                    try {
+                        blobId = id;
+                        await loadFromCloud();
+                        saveBlobId(id);
+                        modal.style.display = 'none';
+                        renderAll();
+                    } catch(e) {
+                        errorDiv.textContent = 'Invalid ID or network error.';
+                        blobId = null;
+                    }
+                };
+            }
+
+            async function createNewBlob() {
+                try {
+                    blobId = await createBlob({ tasks: {} });
+                    saveBlobId(blobId);
+                    localData = { tasks: {} };
+                    updateSyncUI('online', 'New cloud created');
+                } catch(e) {
+                    console.error('Cannot create cloud storage');
+                    updateSyncUI('offline', 'No cloud');
+                }
+                renderAll();
+            }
+
+            async function initCloud() {
+                const savedId = getSavedBlobId();
+                if (savedId) {
+                    blobId = savedId;
+                    await loadFromCloud();
+                } else {
+                    showRecoveryModal();
+                    return;
+                }
+                const backup = localStorage.getItem('dailyTasksBackup');
+                if (backup && (!localData.tasks || Object.keys(localData.tasks).length===0)) {
+                    try { localData = JSON.parse(backup); } catch(e){}
+                }
+                document.getElementById('currentBlobId').value = blobId || '';
+                saveLocalBackup();
+                renderAll();
+            }
+
+            function saveLocalBackup() {
+                localStorage.setItem('dailyTasksBackup', JSON.stringify(localData));
+            }
+            function saveAndSync() {
+                saveLocalBackup();
+                syncToCloud();
+            }
+
+            function dateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth()+1).padStart(2,'0');
+                const d = String(date.getDate()).padStart(2,'0');
+                return `${y}-${m}-${d}`;
+            }
+            function getTasks(date) {
+                const key = dateKey(date);
+                return localData.tasks[key] || [];
+            }
+            function setTasks(date, tasks) {
+                const key = dateKey(date);
+                if (tasks.length === 0) {
+                    delete localData.tasks[key];
+                } else {
+                    localData.tasks[key] = tasks;
+                }
+                saveAndSync();
+            }
+            function getDoneCount(date) { return getTasks(date).filter(t => t.done).length; }
+            function getTotalTasks(date) { return getTasks(date).length; }
+            function getPendingTasks(date) {
+                return getTasks(date).filter(t => !t.done);
+            }
+
+            function renderWeekStrip() {
+                const container = document.getElementById('weekDays');
+                container.innerHTML = '';
+                const start = new Date(weekCenter);
+                start.setDate(start.getDate() - 3);
+                for (let i=0; i<7; i++) {
+                    const day = new Date(start);
+                    day.setDate(start.getDate() + i);
+                    const isToday = day.toDateString() === today.toDateString();
+                    const isSelected = day.toDateString() === selectedDate.toDateString();
+                    const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dayNum = day.getDate();
+                    const cell = document.createElement('div');
+                    cell.className = 'week-day';
+                    if (isToday) cell.classList.add('today');
+                    if (isSelected) cell.classList.add('selected');
+                    cell.innerHTML = `<div class="day-name">${dayName}</div><div class="day-num">${dayNum}</div>`;
+                    cell.addEventListener('click', () => {
+                        selectedDate = new Date(day);
+                        weekCenter = new Date(day);
+                        renderAll();
+                    });
+                    container.appendChild(cell);
+                }
+            }
+
+            function renderTaskPanel() {
+                document.getElementById('taskDateHeading').textContent = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                document.getElementById('taskDateLabel').textContent = selectedDate.getFullYear();
+                const tasks = getTasks(selectedDate);
+                const listDiv = document.getElementById('taskList');
+                listDiv.innerHTML = '';
+                if (tasks.length === 0) {
+                    listDiv.innerHTML = '<div class="empty-message">No tasks for this day. Add one below 👇</div>';
+                } else {
+                    tasks.forEach(task => {
+                        const item = document.createElement('div');
+                        item.className = 'task-item' + (task.done ? ' done' : '');
+                        item.innerHTML = `
+                            <div class="task-radio"><div class="dot"></div></div>
+                            <span class="task-text">${escapeHtml(task.text)}</span>
+                            <button class="task-delete">×</button>
+                        `;
+                        item.querySelector('.task-radio').addEventListener('click', () => toggleTask(task.id));
+                        item.querySelector('.task-delete').addEventListener('click', (e) => { e.stopPropagation(); deleteTask(task.id); });
+                        listDiv.appendChild(item);
+                    });
+                }
+            }
+
+            function toggleTask(taskId) {
+                const tasks = getTasks(selectedDate).map(t => t.id===taskId ? {...t, done:!t.done} : t);
+                setTasks(selectedDate, tasks);
+                renderTaskPanel();
+                updateStatsAndChart();
+                if (reminderActive && selectedDate.toDateString() === today.toDateString()) {
+                    checkPendingAndNotify();
+                }
+            }
+            function deleteTask(taskId) {
+                if (!confirm('Delete this task?')) return;
+                const tasks = getTasks(selectedDate).filter(t => t.id!==taskId);
+                setTasks(selectedDate, tasks);
+                renderTaskPanel();
+                updateStatsAndChart();
+                if (reminderActive && selectedDate.toDateString() === today.toDateString()) {
+                    checkPendingAndNotify();
+                }
+            }
+            function addTask() {
+                const input = document.getElementById('newTaskInput');
+                const text = input.value.trim();
+                if (!text) return;
+                const tasks = getTasks(selectedDate);
+                tasks.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2), text, done: false });
+                setTasks(selectedDate, tasks);
+                input.value = '';
+                renderTaskPanel();
+                updateStatsAndChart();
+                if (reminderActive && selectedDate.toDateString() === today.toDateString()) {
+                    checkPendingAndNotify();
+                }
+            }
+
+            function updateStatsAndChart() {
+                renderStats();
+                renderChart();
+                renderWeekStrip();
+            }
+
+            function renderStats() {
+                const total = getTotalTasks(selectedDate);
+                const done = getDoneCount(selectedDate);
+                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+                const statsBar = document.getElementById('statsBar');
+                statsBar.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Today's Tasks</div>
+                        <div class="stat-value">${total}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value">${done}</div>
+                    </div>
+                    <div class="stat-card progress-card">
+                        <div class="stat-label">Progress</div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                            <div style="flex:1; height:8px; background:#e8e3da; border-radius:10px; overflow:hidden;">
+                                <div style="width:${percent}%; height:100%; background:var(--accent); border-radius:10px; transition: width 0.3s;"></div>
+                            </div>
+                            <span style="font-weight:700; font-size:1rem; color:var(--accent); white-space:nowrap;">${percent}%</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderChart() {
+                const month = selectedDate.getMonth();
+                const year = selectedDate.getFullYear();
+                const daysInMonth = new Date(year, month+1, 0).getDate();
+                const dailyDone = [];
+                for (let d=1; d<=daysInMonth; d++) {
+                    const date = new Date(year, month, d);
+                    dailyDone.push(getDoneCount(date));
+                }
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                if (performanceChart) performanceChart.destroy();
+                if (dailyDone.every(v=>v===0)) {
+                    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+                    ctx.font = '14px Inter, sans-serif';
+                    ctx.fillStyle = '#aaa';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No tasks completed this month yet', ctx.canvas.width/2, ctx.canvas.height/2);
+                    return;
+                }
+                const isMobile = window.innerWidth < 600;
+                performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from({length: daysInMonth}, (_,i)=>i+1),
+                        datasets: [{
+                            label: 'Tasks done',
+                            data: dailyDone,
+                            backgroundColor: dailyDone.map((_,i) => {
+                                const d = i+1;
+                                const date = new Date(year, month, d);
+                                return date.toDateString() === today.toDateString() ? 'rgba(224,185,74,0.8)' : 'rgba(74,111,165,0.5)';
+                            }),
+                            borderColor: dailyDone.map((_,i) => {
+                                const d = i+1;
+                                const date = new Date(year, month, d);
+                                return date.toDateString() === today.toDateString() ? '#e0b94a' : '#4a6fa5';
+                            }),
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Day of month', color: '#6e6e6e' },
+                                grid: { color: '#e8e3da' },
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 11 },
+                                    maxRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: isMobile ? 15 : 31
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Completed', color: '#6e6e6e' },
+                                ticks: { stepSize:1, precision:0, font: { size: isMobile ? 9 : 11 } },
+                                max: Math.max(...dailyDone, 1) + 1
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderAll() {
+                if (!blobId) return;
+                renderWeekStrip();
+                renderTaskPanel();
+                renderStats();
+                renderChart();
+                updateReminderUI();
+            }
+
+            function escapeHtml(text) {
+                return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]);
+            }
+
+            function moveWeek(delta) {
+                weekCenter.setDate(weekCenter.getDate() + delta * 7);
+                const start = new Date(weekCenter);
+                start.setDate(start.getDate() - 3);
+                const end = new Date(weekCenter);
+                end.setDate(end.getDate() + 3);
+                if (selectedDate < start || selectedDate > end) {
+                    selectedDate = new Date(weekCenter);
+                }
+                renderAll();
+            }
+            function goToToday() {
+                selectedDate = new Date(today);
+                weekCenter = new Date(today);
+                renderAll();
+            }
+
+            function toggleSettings() {
+                const panel = document.getElementById('settingsPanel');
+                panel.classList.toggle('show');
+                if (panel.classList.contains('show')) {
+                    document.getElementById('currentBlobId').value = blobId || '';
+                }
+            }
+            async function recoverWithId(id) {
+                blobId = id;
+                saveBlobId(id);
+                await loadFromCloud();
+                saveLocalBackup();
+                document.getElementById('currentBlobId').value = blobId;
+                renderAll();
+                document.getElementById('settingsPanel').classList.remove('show');
+            }
+            function copyBlobId() {
+                if (!blobId) return;
+                navigator.clipboard.writeText(blobId).then(() => {
+                    const btn = document.getElementById('copyBlobIdBtn');
+                    btn.textContent = '✓';
+                    setTimeout(() => { btn.textContent = '📋'; }, 1500);
+                }).catch(() => alert('Copy failed.'));
+            }
+
+            // Reminder functions
+            function updateReminderUI() {
+        const badge = document.getElementById('reminderBadge');
+        const toggleBtn = document.getElementById('reminderToggleBtn');
+        if (reminderActive) {
+            toggleBtn.classList.add('reminder-active');
+            badge.style.display = 'block';
+        } else {
+            toggleBtn.classList.remove('reminder-active');
+            badge.style.display = 'none';
+        }
+    }
+
+    function checkPendingAndNotify() {
+        if (!reminderActive) return;
+        const pending = getPendingTasks(today);
+        if (pending.length === 0) return;
+        if (Notification.permission !== 'granted') return;
+        
+        const taskList = pending.map(t => `• ${t.text}`).join('\n');
+        
+        // Use service worker for notification if available, fallback to regular
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('⏳ Tasks still pending', {
+                    body: `You have ${pending.length} task(s) to complete:\n${taskList}`,
+                    icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" rx="20" fill="%234a6fa5"/%3E%3Crect x="30" y="20" width="40" height="55" rx="5" fill="white"/%3E%3Crect x="38" y="30" width="24" height="4" rx="2" fill="%234a6fa5"/%3E%3Crect x="38" y="40" width="24" height="4" rx="2" fill="%234a6fa5"/%3E%3Crect x="38" y="50" width="16" height="4" rx="2" fill="%234a6fa5"/%3E%3Cpolyline points="42,62 47,67 57,57" fill="none" stroke="%234a6fa5" stroke-width="4" stroke-linecap="round"/%3E%3C/svg%3E',
+                    tag: 'daily-task-reminder',
+                    requireInteraction: true,
+                    vibrate: [200, 100, 200]
+                });
+            });
+        } else {
+            // Fallback for browsers without service worker
+            new Notification('⏳ Tasks still pending', {
+                body: `You have ${pending.length} task(s) to complete:\n${taskList}`,
+                icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" rx="20" fill="%234a6fa5"/%3E%3Crect x="30" y="20" width="40" height="55" rx="5" fill="white"/%3E%3Crect x="38" y="30" width="24" height="4" rx="2" fill="%234a6fa5"/%3E%3Crect x="38" y="40" width="24" height="4" rx="2" fill="%234a6fa5"/%3E%3Crect x="38" y="50" width="16" height="4" rx="2" fill="%234a6fa5"/%3E%3Cpolyline points="42,62 47,67 57,57" fill="none" stroke="%234a6fa5" stroke-width="4" stroke-linecap="round"/%3E%3C/svg%3E',
+                tag: 'daily-task-reminder'
+            });
+        }
+    }
+
+    function startReminder() {
+        if (!('Notification' in window)) {
+            alert('Notifications are not supported by your browser.');
+            reminderActive = false;
+            localStorage.setItem(REMINDER_KEY, 'false');
+            updateReminderUI();
+            return;
+        }
+        
+        // Check if permission is already denied
+        if (Notification.permission === 'denied') {
+            alert('Notification permission was denied. To enable:\n\n1. Tap the lock icon in the address bar\n2. Tap Permissions\n3. Set Notifications to Allow\n4. Refresh the page and try again');
+            reminderActive = false;
+            localStorage.setItem(REMINDER_KEY, 'false');
+            updateReminderUI();
+            return;
+        }
+        
+        // Request permission with user gesture
+        if (Notification.permission === 'default') {
+            // Use a promise-based approach for better Chrome compatibility
+            const promise = Notification.requestPermission();
+            if (promise) {
+                promise.then(perm => {
+                    if (perm === 'granted') {
+                        enableReminder();
+                    } else {
+                        reminderActive = false;
+                        localStorage.setItem(REMINDER_KEY, 'false');
+                        updateReminderUI();
+                    }
+                });
+            } else {
+                // Fallback for older browsers
+                Notification.requestPermission(perm => {
+                    if (perm === 'granted') {
+                        enableReminder();
+                    } else {
+                        reminderActive = false;
+                        localStorage.setItem(REMINDER_KEY, 'false');
+                        updateReminderUI();
+                    }
+                });
+            }
+        } else if (Notification.permission === 'granted') {
+            enableReminder();
+        }
+    }
+
+    function enableReminder() {
+        reminderActive = true;
+        localStorage.setItem(REMINDER_KEY, 'true');
+        updateReminderUI();
+        
+        // Clear existing interval
+        if (reminderInterval) clearInterval(reminderInterval);
+        
+        // Set up periodic check (every 30 minutes)
+        reminderInterval = setInterval(() => {
+            if (reminderActive) checkPendingAndNotify();
+        }, 30 * 60 * 1000);
+        
+        // Show immediate test notification on first enable
+        checkPendingAndNotify();
+    }
+
+    function stopReminder() {
+        reminderActive = false;
+        localStorage.setItem(REMINDER_KEY, 'false');
+        updateReminderUI();
+        if (reminderInterval) {
+            clearInterval(reminderInterval);
+            reminderInterval = null;
+        }
+    }
+
+    function toggleReminder() {
+        if (reminderActive) {
+            stopReminder();
+        } else {
+            startReminder();
+        }
+    }
+
+            // Event listeners
+            document.getElementById('prevWeekBtn').addEventListener('click', () => moveWeek(-1));
+            document.getElementById('nextWeekBtn').addEventListener('click', () => moveWeek(1));
+            document.getElementById('todayBtn').addEventListener('click', goToToday);
+            document.getElementById('addTaskBtn').addEventListener('click', addTask);
+            document.getElementById('newTaskInput').addEventListener('keypress', (e) => { if (e.key==='Enter') addTask(); });
+            document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
+            document.getElementById('recoverBtn').addEventListener('click', async () => {
+                const id = document.getElementById('recoveryIdInput').value.trim();
+                if (id) await recoverWithId(id);
+            });
+            document.getElementById('copyBlobIdBtn').addEventListener('click', copyBlobId);
+            document.getElementById('downloadBackupBtn').addEventListener('click', downloadBackup);
+            document.getElementById('restoreBackupBtn').addEventListener('click', () => {
+                document.getElementById('restoreFileInput').click();
+            });
+            document.getElementById('restoreFileInput').addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    restoreBackup(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+            document.getElementById('reminderToggleBtn').addEventListener('click', toggleReminder);
+
+            document.addEventListener('click', (e) => {
+                const panel = document.getElementById('settingsPanel');
+                const btn = document.getElementById('settingsBtn');
+                if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                    panel.classList.remove('show');
+                }
+            });
+
+            async function init() {
+                const savedReminder = localStorage.getItem(REMINDER_KEY);
+                if (savedReminder === 'true') {
+                    reminderActive = false;
+                    startReminder();
+                } else {
+                    reminderActive = false;
+                    updateReminderUI();
+                }
+
+                const backup = localStorage.getItem('dailyTasksBackup');
+                if (backup) {
+                    try { localData = JSON.parse(backup); } catch(e){}
+                }
+                await initCloud();
+                if (blobId) {
+                    selectedDate = new Date(today);
+                    weekCenter = new Date(today);
+                    renderAll();
+                }
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
