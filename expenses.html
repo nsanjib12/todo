@@ -88,7 +88,7 @@
 
         .hidden-date-input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
 
-        /* Add Expense Modal */
+        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 999;
@@ -104,10 +104,7 @@
             margin-bottom: 20px;
             animation: slideDown 0.25s ease;
         }
-        @keyframes slideDown {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-box h3 { font-size: 1.1rem; margin-bottom: 16px; }
         .modal-field { margin-bottom: 12px; text-align: left; }
         .modal-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -129,17 +126,33 @@
         .btn-outline { background: var(--card-bg); color: var(--text); border: 1.5px solid var(--border); }
         .btn-outline:hover { background: var(--hover-bg); }
 
-        /* Monthly summary */
-        .monthly-summary { display: flex; gap: 10px; margin-top: 8px; }
-        .summary-card { flex: 1; padding: 12px; border-radius: var(--radius); background: var(--input-bg); text-align: center; }
-        .summary-value { font-size: 1.2rem; font-weight: 700; }
-        .summary-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
+        /* Monthly calculations section */
+        .section-title {
+            font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;
+            color: var(--text);
+        }
+        .monthly-summary {
+            display: flex; gap: 10px;
+        }
+        .summary-card {
+            flex: 1; padding: 14px 10px; border-radius: var(--radius);
+            background: var(--input-bg); text-align: center;
+        }
+        .summary-value {
+            font-size: 1.3rem; font-weight: 800;
+        }
+        .summary-value.income { color: var(--success); }
+        .summary-value.expense { color: var(--danger); }
+        .summary-value.balance { color: var(--success); }
+        .summary-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; }
 
         @media (max-width: 500px) { 
             .chart-container { height: 160px; }
             .header { padding: 10px 12px; }
             .date-display { font-size: 0.9rem; }
             .modal-row { flex-direction: column; }
+            .monthly-summary { flex-wrap: wrap; }
+            .summary-card { min-width: 90px; }
         }
     </style>
 </head>
@@ -159,7 +172,7 @@
             <input type="date" id="datePicker" class="hidden-date-input" onchange="onDateChange(this.value)">
         </div>
 
-        <!-- Today's stats: Income & Expense only, no balance -->
+        <!-- Today's stats -->
         <div class="stats-bar" id="statsBar"></div>
 
         <div class="card">
@@ -167,10 +180,15 @@
             <div id="expenseList"></div>
         </div>
 
+        <!-- Monthly chart -->
         <div class="card">
             <h3 style="margin-bottom:8px; font-size:0.9rem;">📊 Monthly Overview</h3>
             <div class="chart-container"><canvas id="expenseChart"></canvas></div>
-            <!-- Monthly Summary -->
+        </div>
+
+        <!-- Separate Monthly Calculations card -->
+        <div class="card">
+            <div class="section-title">🧾 Monthly Calculations</div>
             <div class="monthly-summary" id="monthlySummary"></div>
         </div>
     </div>
@@ -238,7 +256,7 @@
             const dayIncome = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
             const dayExpense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
-            // Today's stats: only Income and Expense
+            // Today's stats
             document.getElementById('statsBar').innerHTML = `
                 <div class="stat-card"><div class="stat-label">Today's Income</div><div class="stat-value positive">₹${dayIncome.toLocaleString()}</div></div>
                 <div class="stat-card"><div class="stat-label">Today's Expenses</div><div class="stat-value negative">₹${dayExpense.toLocaleString()}</div></div>
@@ -290,11 +308,20 @@
                 }
             });
 
-            // Monthly summary
+            // Monthly summary (separate card)
             document.getElementById('monthlySummary').innerHTML = `
-                <div class="summary-card"><div class="summary-label">Monthly Income</div><div class="summary-value positive">₹${totalMonthIncome.toLocaleString()}</div></div>
-                <div class="summary-card"><div class="summary-label">Monthly Expenses</div><div class="summary-value negative">₹${totalMonthExpense.toLocaleString()}</div></div>
-                <div class="summary-card"><div class="summary-label">Net Balance</div><div class="summary-value" style="color:${balance >= 0 ? 'var(--success)' : 'var(--danger)'};">₹${balance.toLocaleString()}</div></div>
+                <div class="summary-card">
+                    <div class="summary-value income">₹${totalMonthIncome.toLocaleString()}</div>
+                    <div class="summary-label">Income</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value expense">₹${totalMonthExpense.toLocaleString()}</div>
+                    <div class="summary-label">Expenses</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value balance" style="color: ${balance >= 0 ? 'var(--success)' : 'var(--danger)'};">₹${balance.toLocaleString()}</div>
+                    <div class="summary-label">Balance</div>
+                </div>
             `;
         }
 
