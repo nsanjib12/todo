@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Expense Tracker</title>
+    <meta name="theme-color" content="#4a6fa5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234a6fa5'/%3E%3Ccircle cx='35' cy='40' r='12' fill='white'/%3E%3Ccircle cx='65' cy='40' r='12' fill='white'/%3E%3Ccircle cx='50' cy='65' r='12' fill='white'/%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #f5f3ef; --card-bg: #ffffff; --text: #1e1e1e; --text-secondary: #6e6e6e;
+            --border: #e0dcd4; --accent: #4a6fa5; --shadow: 0 2px 14px rgba(0,0,0,0.05); --radius: 14px;
+            --font: 'Inter', 'Segoe UI', system-ui, sans-serif; --danger: #e74c3c; --success: #2ecc71;
+            --input-bg: #fafaf7; --hover-bg: #f0ede6;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a2e; --card-bg: #16213e; --text: #e0e0e0; --text-secondary: #a0a0a0;
+            --border: #2a2a4a; --shadow: 0 2px 14px rgba(0,0,0,0.3); --input-bg: #1a1a2e; --hover-bg: #2a2a4a;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; padding: 12px; transition: background 0.3s, color 0.3s; }
+        .app { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+        .header { display: flex; align-items: center; gap: 10px; background: var(--card-bg); padding: 10px 14px; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .back-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: var(--accent); padding: 4px 8px; border-radius: 8px; text-decoration: none; }
+        .back-btn:hover { background: var(--hover-bg); }
+        .header-title { font-size: 1.15rem; font-weight: 700; flex: 1; display: flex; align-items: center; gap: 8px; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .date-display { font-size: 1rem; font-weight: 700; color: var(--text); cursor: pointer; padding: 4px 12px; border-radius: 10px; text-align: right; }
+        .date-display:hover { background: var(--hover-bg); }
+        .date-display .day-name { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; display: block; }
+        .calendar-icon { background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 6px; border-radius: 10px; color: var(--accent); }
+        .calendar-icon:hover { background: var(--hover-bg); }
+        .add-btn { background: var(--accent); border: none; cursor: pointer; font-size: 1.3rem; width: 36px; height: 36px; border-radius: 10px; color: #fff; display: flex; align-items: center; justify-content: center; }
+        .add-btn:hover { opacity: 0.85; }
+        .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; }
+        .expense-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--input-bg); margin-bottom: 4px; transition: 0.2s; flex-wrap: wrap; }
+        .expense-item:hover { background: var(--hover-bg); }
+        .expense-info { flex: 1; min-width: 100px; }
+        .expense-desc { font-weight: 600; font-size: 0.9rem; }
+        .expense-cat { font-size: 0.7rem; color: var(--text-secondary); }
+        .expense-amount { font-weight: 700; min-width: 70px; text-align: right; }
+        .expense-amount.positive { color: var(--success); }
+        .expense-amount.negative { color: var(--danger); }
+        .delete-btn { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 1rem; font-weight: 700; opacity: 0; transition: 0.2s; padding: 4px 8px; border-radius: 6px; }
+        .expense-item:hover .delete-btn { opacity: 1; }
+        .delete-btn:hover { background: #fce8e8; }
+        .stats-bar { display: flex; gap: 8px; }
+        .stat-card { background: var(--card-bg); padding: 12px 14px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; flex: 1; min-width: 80px; }
+        .stat-value { font-size: 1.3rem; font-weight: 800; }
+        .stat-value.positive { color: var(--success); }
+        .stat-value.negative { color: var(--danger); }
+        .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
+        .chart-container { height: 180px; }
+        .hidden-date-input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: flex; align-items: flex-start; justify-content: center; padding-top: 20px; overflow-y: auto; }
+        .modal-box { background: var(--card-bg); border-radius: 16px; padding: 20px; width: 90%; max-width: 400px; text-align: center; color: var(--text); box-shadow: 0 12px 40px rgba(0,0,0,0.2); margin-bottom: 20px; animation: slideDown 0.25s ease; }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-box h3 { font-size: 1.1rem; margin-bottom: 16px; }
+        .modal-field { margin-bottom: 12px; text-align: left; }
+        .modal-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .modal-field input, .modal-field select { width: 100%; padding: 10px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-family: var(--font); background: var(--input-bg); color: var(--text); font-size: 0.9rem; }
+        .modal-field input:focus, .modal-field select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(74,111,165,0.1); }
+        .modal-row { display: flex; gap: 10px; }
+        .modal-row .modal-field { flex: 1; }
+        .modal-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+        .btn { padding: 10px 18px; border-radius: 22px; border: none; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; font-family: var(--font); transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-outline { background: var(--card-bg); color: var(--text); border: 1.5px solid var(--border); }
+        .btn-outline:hover { background: var(--hover-bg); }
+        .section-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .monthly-summary { display: flex; gap: 10px; }
+        .summary-card { flex: 1; padding: 14px 10px; border-radius: var(--radius); background: var(--input-bg); text-align: center; }
+        .summary-value { font-size: 1.3rem; font-weight: 800; }
+        .summary-value.income { color: var(--success); }
+        .summary-value.expense { color: var(--danger); }
+        .summary-value.balance { color: var(--success); }
+        .summary-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; }
+        @media (max-width: 500px) { .chart-container { height: 160px; } .header { padding: 10px 12px; } .date-display { font-size: 0.9rem; } .modal-row { flex-direction: column; } .monthly-summary { flex-wrap: wrap; } .summary-card { min-width: 90px; } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <a href="index.html" class="back-btn" title="Back">←</a>
+            <div class="header-title"><span style="font-size:1.3rem;">💳</span> Expense Tracker</div>
+            <div class="header-right">
+                <button class="add-btn" onclick="openAddExpenseModal()" title="Add transaction">+</button>
+                <div class="date-display" id="dateDisplay" onclick="openDatePicker()">
+                    <span class="day-name" id="dayNameDisplay"></span>
+                    <span id="dateNumDisplay"></span>
+                </div>
+                <button class="calendar-icon" onclick="goToToday()" title="Go to today">📅</button>
+            </div>
+            <input type="date" id="datePicker" class="hidden-date-input" onchange="onDateChange(this.value)">
+        </div>
+
+        <div class="stats-bar" id="statsBar"></div>
+
+        <div class="card">
+            <h3 style="margin-bottom:10px; font-size:0.9rem;">Today's Transactions</h3>
+            <div id="expenseList"></div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:8px; font-size:0.9rem;">📊 Monthly Overview</h3>
+            <div class="chart-container"><canvas id="expenseChart"></canvas></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">🧾 Monthly Calculations</div>
+            <div class="monthly-summary" id="monthlySummary"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addExpenseModal" style="display:none;" onclick="if(event.target===this) closeAddExpenseModal()">
+        <div class="modal-box">
+            <h3>💳 Add Transaction</h3>
+            <div class="modal-field"><label>Description</label><input type="text" id="expenseDesc" placeholder="What was it for?" maxlength="40"></div>
+            <div class="modal-row">
+                <div class="modal-field"><label>Amount (₹)</label><input type="number" id="expenseAmount" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="modal-field"><label>Type</label><select id="expenseType"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+            </div>
+            <div class="modal-field"><label>Category</label><select id="expenseCategory"><option>Food</option><option>Transport</option><option>Shopping</option><option>Bills</option><option>Entertainment</option><option>Health</option><option>Salary</option><option>Other</option></select></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeAddExpenseModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addExpense()">Add Transaction</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+        let selectedDate = new Date(); const today = new Date(); today.setHours(0,0,0,0);
+        let chartInstance = null;
+
+        function openDatePicker() { document.getElementById('datePicker').showPicker ? document.getElementById('datePicker').showPicker() : document.getElementById('datePicker').click(); }
+        function openAddExpenseModal() {
+            document.getElementById('addExpenseModal').style.display = 'flex';
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseType').value = 'expense';
+            document.getElementById('expenseCategory').value = 'Food';
+            document.getElementById('expenseDesc').focus();
+            document.body.style.overflow = 'hidden'; document.body.style.position = 'fixed'; document.body.style.width = '100%';
+        }
+        function closeAddExpenseModal() { document.getElementById('addExpenseModal').style.display = 'none'; document.body.style.overflow = ''; document.body.style.position = ''; document.body.style.width = ''; }
+
+        function render() {
+            document.getElementById('datePicker').value = selectedDate.toISOString().split('T')[0];
+            document.getElementById('dayNameDisplay').textContent = selectedDate.toLocaleDateString('en-US', { weekday: 'short' });
+            document.getElementById('dateNumDisplay').textContent = selectedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+            const key = dateKey(selectedDate);
+            const txns = (appData.expenses.transactions || []).filter(t => t.date === key).sort((a, b) => b.amount - a.amount);
+            const dayIncome = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const dayExpense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+
+            document.getElementById('statsBar').innerHTML = `
+                <div class="stat-card"><div class="stat-label">Today's Income</div><div class="stat-value positive">₹${dayIncome.toLocaleString()}</div></div>
+                <div class="stat-card"><div class="stat-label">Today's Expenses</div><div class="stat-value negative">₹${dayExpense.toLocaleString()}</div></div>`;
+
+            document.getElementById('expenseList').innerHTML = txns.length === 0 ? '<div style="text-align:center;color:var(--text-secondary);padding:15px;">No transactions yet. Tap <strong>+</strong> to add one!</div>' : txns.map(t => `<div class="expense-item"><div class="expense-info"><div class="expense-desc">${escapeHTML(t.description || 'No desc')}</div><div class="expense-cat">${t.category || 'General'}</div></div><div class="expense-amount ${t.type === 'income' ? 'positive' : 'negative'}">${t.type === 'income' ? '+' : '-'}₹${t.amount.toLocaleString()}</div><button class="delete-btn" onclick="deleteExpense('${t.id}')">×</button></div>`).join('');
+
+            renderChartAndSummary();
+        }
+
+        function renderChartAndSummary() {
+            const m = selectedDate.getMonth(), y = selectedDate.getFullYear(), dim = new Date(y, m+1, 0).getDate();
+            const dailyExp = [], dailyInc = [];
+            let totalMonthIncome = 0, totalMonthExpense = 0;
+            for (let d = 1; d <= dim; d++) {
+                const dk = dateKey(new Date(y, m, d));
+                const dayTx = (appData.expenses.transactions || []).filter(t => t.date === dk);
+                const inc = dayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+                const exp = dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                dailyInc.push(inc); dailyExp.push(exp);
+                totalMonthIncome += inc; totalMonthExpense += exp;
+            }
+            const balance = totalMonthIncome - totalMonthExpense;
+
+            const ctx = document.getElementById('expenseChart'); if (!ctx) return;
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: dim}, (_, i) => i + 1),
+                    datasets: [
+                        { label: 'Expenses', data: dailyExp, backgroundColor: 'rgba(231,76,60,0.6)', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 4 },
+                        { label: 'Income', data: dailyInc, backgroundColor: 'rgba(46,204,113,0.6)', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { x: { grid: { color: '#e8e3da' } }, y: { beginAtZero: true } } }
+            });
+
+            document.getElementById('monthlySummary').innerHTML = `
+                <div class="summary-card"><div class="summary-value income">₹${totalMonthIncome.toLocaleString()}</div><div class="summary-label">Income</div></div>
+                <div class="summary-card"><div class="summary-value expense">₹${totalMonthExpense.toLocaleString()}</div><div class="summary-label">Expenses</div></div>
+                <div class="summary-card"><div class="summary-value balance" style="color:${balance >= 0 ? 'var(--success)' : 'var(--danger)'};">₹${balance.toLocaleString()}</div><div class="summary-label">Balance</div></div>`;
+        }
+
+        function addExpense() {
+            const amount = parseFloat(document.getElementById('expenseAmount')?.value);
+            const desc = document.getElementById('expenseDesc')?.value.trim() || 'No description';
+            const type = document.getElementById('expenseType')?.value;
+            const category = document.getElementById('expenseCategory')?.value;
+            if (!amount || amount <= 0) { document.getElementById('expenseAmount').focus(); return; }
+            const id = Date.now().toString(36);
+            appData.expenses.transactions = appData.expenses.transactions || [];
+            appData.expenses.transactions.push({ id, date: dateKey(selectedDate), amount, description: desc, type, category });
+            queueUpsert('expenses', { id, date: dateKey(selectedDate), description: desc, type, category, amount });
+            closeAddExpenseModal();
+            render();
+        }
+        function deleteExpense(id) { 
+            if (!confirm('Delete?')) return; 
+            appData.expenses.transactions = (appData.expenses.transactions || []).filter(t => t.id !== id); 
+            queueDelete('expenses', id); 
+            render(); 
+        }
+        function onDateChange(v) { selectedDate = new Date(v + 'T00:00:00'); render(); }
+        function goToToday() { selectedDate = new Date(today); render(); }
+
+        initSync();
+        render();
+    </script>
+</body>
+</html>
