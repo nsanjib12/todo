@@ -22,17 +22,15 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 });
 
 // ─────────────── Google Sheets Sync ───────────────
-const API_URL = 'https://script.google.com/macros/s/AKfycbw5JtTxsj-1NifgJwuXdZxQDKw22haY8cojjrJtOeZjVios56FryydTCSrxhMa9qQoShA/exec'; // ← Replace with your deployed Apps Script URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbw5JtTxsj-1NifgJwuXdZxQDKw22haY8cojjrJtOeZjVios56FryydTCSrxhMa9qQoShA/exec'; // ← Replace with your Apps Script URL
 const TOKEN_KEY = 'lifeTrackerSecurityToken';
+const LOCAL_DATA_KEY = 'lifeTrackerLocal';
 
 let appData = {
     todo: { tasks: {} },
     habits: { habits: [], completions: {} },
     expenses: { transactions: [] }
 };
-let syncInProgress = false;
-let isLoadingFromCloud = false;
-let lastLocalSave = null;
 
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 function setToken(token) { localStorage.setItem(TOKEN_KEY, token); }
@@ -44,44 +42,61 @@ function updateSyncUI(state, text) {
     if (txt) txt.textContent = text;
 }
 
-async function syncChangesToCloud(changes) {
+// Save data locally - ALWAYS works
+function saveDataLocal() {
+    localStorage.setItem(LOCAL_DATA_KEY, JSON.stringify(appData));
+}
+
+// Load data from local storage
+function loadDataLocal() {
+    const saved = localStorage.getItem(LOCAL_DATA_KEY);
+    if (saved) {
+        try {
+            appData = JSON.parse(saved);
+            return true;
+        } catch(e) {
+            console.warn('Failed to parse local data');
+            return false;
+        }
+    }
+    return false;
+}
+
+// Sync to Google Sheets (manual)
+async function syncToCloud() {
     const token = getToken();
-    if (!token || syncInProgress) return;
-    syncInProgress = true;
+    if (!token) {
+        updateSyncUI('offline', 'Token required');
+        return false;
+    }
     updateSyncUI('syncing', 'Syncing...');
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ token, changes })
+            body: JSON.stringify({ token, data: appData })
         });
         const result = await response.json();
         if (result.error) {
             updateSyncUI('offline', 'Sync error');
-        } else {
-            updateSyncUI('online', 'Saved online');
+            return false;
         }
+        updateSyncUI('online', 'Saved online');
+        return true;
     } catch (e) {
         console.warn('Sync failed', e);
         updateSyncUI('offline', 'Offline');
-    } finally {
-        syncInProgress = false;
+        return false;
     }
 }
 
+// Load from Google Sheets (manual)
 async function loadFromCloud() {
     const token = getToken();
     if (!token) {
         updateSyncUI('offline', 'Token required');
         return false;
     }
-    
-    // Don't load if we're already loading or syncing
-    if (isLoadingFromCloud || syncInProgress) {
-        return true;
-    }
-    
-    isLoadingFromCloud = true;
     updateSyncUI('syncing', 'Loading...');
     try {
         const resp = await fetch(`${API_URL}?token=${encodeURIComponent(token)}`);
@@ -92,12 +107,8 @@ async function loadFromCloud() {
             return false;
         }
         if (data && data.todo) {
-            // Only update appData if we have local changes that haven't been synced yet
-            // This prevents the cloud from overwriting unsynced local data
-            const localData = localStorage.getItem('lifeTrackerLocal');
-            if (!localData || syncInProgress) {
-                appData = data;
-            }
+            appData = data;
+            saveDataLocal();
         }
         updateSyncUI('online', 'Online');
         return true;
@@ -105,43 +116,14 @@ async function loadFromCloud() {
         console.warn('Load failed', e);
         updateSyncUI('offline', 'Offline');
         return false;
-    } finally {
-        isLoadingFromCloud = false;
     }
-}
-
-function saveData() {
-    localStorage.setItem('lifeTrackerLocal', JSON.stringify(appData));
-    lastLocalSave = Date.now();
-}
-
-// ─────────────── Change tracking helpers ───────────────
-function queueUpsert(type, record) {
-    const changes = {
-        todo: { deleted: [], upserted: [] },
-        habits: { deleted: [], upserted: [] },
-        expenses: { deleted: [], upserted: [] }
-    };
-    changes[type].upserted.push(record);
-    saveData(); // Save local first
-    syncChangesToCloud(changes);
-}
-
-function queueDelete(type, id) {
-    const changes = {
-        todo: { deleted: [], upserted: [] },
-        habits: { deleted: [], upserted: [] },
-        expenses: { deleted: [], upserted: [] }
-    };
-    changes[type].deleted.push(id);
-    saveData(); // Save local first
-    syncChangesToCloud(changes);
 }
 
 // ─────────────── Helpers ───────────────
 function dateKey(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+
 function escapeHTML(s) {
     return s.replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -149,18 +131,7 @@ function escapeHTML(s) {
 }
 
 // ─────────────── Initialization ───────────────
-async function initSync() {
-    // First load from localStorage for instant display
-    const local = localStorage.getItem('lifeTrackerLocal');
-    if (local) {
-        try { appData = JSON.parse(local); } catch (e) {}
-    }
-    
-    // Then try to load from cloud (only if token exists)
-    const token = getToken();
-    if (token) {
-        await loadFromCloud();
-    }
-    
+function initSync() {
+    loadDataLocal();
     return true;
 }
