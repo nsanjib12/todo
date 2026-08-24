@@ -31,6 +31,8 @@ let appData = {
     expenses: { transactions: [] }
 };
 let syncInProgress = false;
+let isLoadingFromCloud = false;
+let lastLocalSave = null;
 
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 function setToken(token) { localStorage.setItem(TOKEN_KEY, token); }
@@ -73,6 +75,13 @@ async function loadFromCloud() {
         updateSyncUI('offline', 'Token required');
         return false;
     }
+    
+    // Don't load if we're already loading or syncing
+    if (isLoadingFromCloud || syncInProgress) {
+        return true;
+    }
+    
+    isLoadingFromCloud = true;
     updateSyncUI('syncing', 'Loading...');
     try {
         const resp = await fetch(`${API_URL}?token=${encodeURIComponent(token)}`);
@@ -83,7 +92,12 @@ async function loadFromCloud() {
             return false;
         }
         if (data && data.todo) {
-            appData = data;
+            // Only update appData if we have local changes that haven't been synced yet
+            // This prevents the cloud from overwriting unsynced local data
+            const localData = localStorage.getItem('lifeTrackerLocal');
+            if (!localData || syncInProgress) {
+                appData = data;
+            }
         }
         updateSyncUI('online', 'Online');
         return true;
@@ -91,11 +105,14 @@ async function loadFromCloud() {
         console.warn('Load failed', e);
         updateSyncUI('offline', 'Offline');
         return false;
+    } finally {
+        isLoadingFromCloud = false;
     }
 }
 
 function saveData() {
     localStorage.setItem('lifeTrackerLocal', JSON.stringify(appData));
+    lastLocalSave = Date.now();
 }
 
 // ─────────────── Change tracking helpers ───────────────
@@ -106,6 +123,7 @@ function queueUpsert(type, record) {
         expenses: { deleted: [], upserted: [] }
     };
     changes[type].upserted.push(record);
+    saveData(); // Save local first
     syncChangesToCloud(changes);
 }
 
@@ -116,6 +134,7 @@ function queueDelete(type, id) {
         expenses: { deleted: [], upserted: [] }
     };
     changes[type].deleted.push(id);
+    saveData(); // Save local first
     syncChangesToCloud(changes);
 }
 
@@ -137,14 +156,11 @@ async function initSync() {
         try { appData = JSON.parse(local); } catch (e) {}
     }
     
-    // Then try to load from cloud
-    const success = await loadFromCloud();
-    
-    // If cloud load failed, use local data
-    if (!success) {
-        console.log('Using local data only');
+    // Then try to load from cloud (only if token exists)
+    const token = getToken();
+    if (token) {
+        await loadFromCloud();
     }
     
-    // Return true so caller can proceed
     return true;
 }
