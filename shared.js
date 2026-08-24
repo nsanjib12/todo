@@ -22,16 +22,14 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 });
 
 // ─────────────── Google Sheets Sync ───────────────
-const API_URL = 'https://script.google.com/macros/s/AKfycbw5JtTxsj-1NifgJwuXdZxQDKw22haY8cojjrJtOeZjVios56FryydTCSrxhMa9qQoShA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw5JtTxsj-1NifgJwuXdZxQDKw22haY8cojjrJtOeZjVios56FryydTCSrxhMa9qQoShA/exec'; // ← Replace with your deployed Apps Script URL
 const TOKEN_KEY = 'lifeTrackerSecurityToken';
-const PENDING_CHANGES_KEY = 'lifeTrackerPendingChanges';
 
 let appData = {
     todo: { tasks: {} },
     habits: { habits: [], completions: {} },
     expenses: { transactions: [] }
 };
-
 let syncInProgress = false;
 
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
@@ -125,7 +123,6 @@ function queueDelete(type, id) {
 function dateKey(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function escapeHTML(s) {
     return s.replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -134,10 +131,20 @@ function escapeHTML(s) {
 
 // ─────────────── Initialization ───────────────
 async function initSync() {
+    // First load from localStorage for instant display
     const local = localStorage.getItem('lifeTrackerLocal');
     if (local) {
         try { appData = JSON.parse(local); } catch (e) {}
     }
-    await loadFromCloud();
-    if (typeof render === 'function') render();
+    
+    // Then try to load from cloud
+    const success = await loadFromCloud();
+    
+    // If cloud load failed, use local data
+    if (!success) {
+        console.log('Using local data only');
+    }
+    
+    // Return true so caller can proceed
+    return true;
 }

@@ -202,9 +202,12 @@
             chartInstance = new Chart(ctx, { type:'bar', data:{labels:Array.from({length:dim},(_,i)=>i+1), datasets:[{data,backgroundColor:'rgba(74,111,165,0.6)',borderColor:'#4a6fa5',borderWidth:1,borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#e8e3da'}},y:{beginAtZero:true,ticks:{stepSize:1}}}} });
         }
 
-        initSync();
-        render();
-        renderColorPresets();
+        async function init() {
+            await initSync();
+            render();
+            renderColorPresets();
+        }
+        init();
     </script>
 </body>
 </html>

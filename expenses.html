@@ -224,8 +224,11 @@
         function onDateChange(v) { selectedDate = new Date(v + 'T00:00:00'); render(); }
         function goToToday() { selectedDate = new Date(today); render(); }
 
-        initSync();
-        render();
+        async function init() {
+            await initSync();
+            render();
+        }
+        init();
     </script>
 </body>
 </html>
